@@ -6,7 +6,7 @@ namespace Store
     {
 		public int Id { get; set; }
 
-		public string VoucherCode { get; set; }
+		public string VoucherCode { get; set; } = null!;
 
 		public double Price { get; set; }
 
@@ -17,7 +17,7 @@ namespace Store
 		public DateTime ExpireDate { get; set; }
 
 		[JsonIgnore]
-		public Auth Auth { get; set; }
+		public Auth Auth { get; set; } 
 
 		public int AuthId { get; set; }
 

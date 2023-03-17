@@ -2,6 +2,6 @@
 {
     public class OrderDto
     {
-        public string ProductName { get; set; }
+        public string ProductName { get; set; } = null!;
     }
 }

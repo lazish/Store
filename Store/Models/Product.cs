@@ -18,6 +18,6 @@ namespace Store
         public int AuthId { get; set; }
 
         [JsonIgnore]
-        public List<Order> Orders { get; set; }
+        public List<Order>? Orders { get; set; }
     }
 }

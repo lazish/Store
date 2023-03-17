@@ -2,9 +2,9 @@
 {
     public class TokenRoleDto
     {
-        public string Token { get; set; }
+        public string Token { get; set; } = null!;
 
-        public string Role { get; set; }
+        public string Role { get; set; } = null!;
 
         public int Id { get; set; }
     }

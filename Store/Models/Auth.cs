@@ -13,12 +13,12 @@ namespace Store
 
 		public string Role { get; set; } = "user";
 
-		public List<Product> Products { get; set; }
+		public List<Product>? Products { get; set; }
 
-		public List<Order> Orders { get; set; }
+		public List<Order>? Orders { get; set; }
 
-		public List<Voucher> Vouchers { get; set; }
+		public List<Voucher>? Vouchers { get; set; }
 
-		public List<SoldProduct> SoldProducts { get; set; }
+		public List<SoldProduct>? SoldProducts { get; set; }
 	}
 }

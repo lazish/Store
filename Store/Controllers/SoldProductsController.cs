@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Store.DataBaseHelper;
@@ -7,14 +6,15 @@ using Store.Services;
 
 namespace Store.Controllers
 {
+
     [Route("api/[controller]")]
-    [ApiController]
-    public class SoldProductsController : ControllerBase
+    public class SoldProductController : Controller
     {
+
         private readonly DataContext _context;
         private readonly IUserService _userService;
 
-        public SoldProductsController(DataContext context, IUserService userService)
+        public SoldProductController(DataContext context, IUserService userService)
         {
             _context = context;
             _userService = userService;
@@ -40,6 +40,7 @@ namespace Store.Controllers
                     Price = item.Price,
                     ProductName = item.ProductName,
                     AuthName = user.Username,
+                    DateTime = item.DateTime
                 };
 
                 SoldList.Add(newSold);
@@ -63,6 +64,15 @@ namespace Store.Controllers
 
             if (orders.Count <= 0) return Ok(false);
 
+            var vouchers = await _context.Vouchers.Where(x => x.UsedBy == username).ToListAsync();
+
+            if (vouchers == null) return Ok(false);
+
+            foreach (var item in vouchers)
+            {
+                item.Used = 3;
+            }
+
 
             foreach (var item in orders)
             {
@@ -71,7 +81,8 @@ namespace Store.Controllers
                     Price = item.Price,
                     Quantity = item.Quantity,
                     ProductName = item.ProductName,
-                    AuthId = user.Id
+                    AuthId = user.Id,
+                    DateTime = DateTime.Now
                 };
 
                 _context.SoldProducts.Add(sold);
@@ -101,5 +112,56 @@ namespace Store.Controllers
 
             return Ok(soldPorduct);
         }
+
+
+        [HttpGet("user"), Authorize]
+        public async Task<ActionResult<List<SoldUserDto>>> GetSold()
+        {
+            var username = _userService.GetMyName();
+
+            var user = _context.Users.Where(x => x.Username == username).FirstOrDefault();
+
+            if (user == null) return Ok(false);
+
+            var soldList = await _context.SoldProducts.Where(x => x.AuthId == user.Id).Select(x => new SoldUserDto
+            {
+                Id = x.Id,
+                ProductName = x.ProductName,
+                Price = x.Price,
+                Quantity = x.Quantity,
+                DateTime = x.DateTime
+            }).ToListAsync();
+
+            return Ok(soldList);
+        }
+
+        [HttpDelete("user"), Authorize]
+        public async Task<ActionResult<bool>> DelSold([FromQuery] int id)
+        {
+            var username = _userService.GetMyName();
+
+            var user = _context.Users.Where(x => x.Username == username).FirstOrDefault();
+
+            if (user == null) return Ok(false);
+
+            var soldProduct = _context.SoldProducts.Where(x => x.Id == id && x.AuthId == user.Id).FirstOrDefault();
+
+            if (soldProduct == null) return Ok(false);
+
+            var product = _context.Products.Where(x => x.ProductName == soldProduct.ProductName).FirstOrDefault();
+
+            if (product == null) return Ok(false);
+
+            product.Quantity += soldProduct.Quantity;
+
+            _context.SoldProducts.Remove(soldProduct);
+
+            await _context.SaveChangesAsync();
+
+            return Ok(true);
+        }
+
+
+
     }
 }
